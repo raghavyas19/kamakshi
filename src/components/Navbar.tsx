@@ -1,123 +1,112 @@
-import React, { useState, useEffect } from 'react';
-import { Menu, X, Moon, Sun } from 'lucide-react';
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { Moon, Sun, Menu, X } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useDarkMode } from '../contexts/DarkModeContext';
 
-interface NavbarProps {
-  activeSection: string;
-  darkMode: boolean;
-  toggleDarkMode: () => void;
-}
+const Navbar: React.FC = () => {
+  const { isDarkMode, toggleDarkMode } = useDarkMode();
+  const location = useLocation();
+  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
-const Navbar: React.FC<NavbarProps> = ({ activeSection, darkMode, toggleDarkMode }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
-    
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const navItems = [
-    { id: 'home', label: 'Home' },
-    { id: 'mission', label: 'Mission' },
-    { id: 'members', label: 'Members' },
-    { id: 'domains', label: 'Domains' },
-    { id: 'gallery', label: 'Chamber of Tales' },
-    { id: 'rights', label: 'Know Your Rights' },
-    { id: 'blog', label: 'Blog Vault' },
-    { id: 'calendar', label: 'Calendar' },
-    { id: 'volunteers', label: 'Volunteers' }
+  const navLinks = [
+    { path: '/', label: 'Home' },
+    { path: '/mission', label: 'Mission' },
+    { path: '/members', label: 'Members' },
+    { path: '/domains', label: 'Domains' },
+    { path: '/gallery', label: 'Gallery' },
+    { path: '/rights', label: 'Rights' },
+    { path: '/blogs', label: 'Blogs' },
+    { path: '/calendar', label: 'Calendar' },
+    { path: '/volunteers', label: 'Volunteers' },
+    { path: '/news', label: 'News' },
   ];
 
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-    setIsOpen(false);
-  };
-
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      scrolled ? 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-lg' : 'bg-transparent'
-    }`}>
+    <nav className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-purple-100 dark:border-gray-700 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-sm">K</span>
-            </div>
-            <span className="font-bold text-xl text-gray-800 dark:text-white">
-              Kamakshi & HeForShe
-            </span>
-          </div>
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.5, type: "spring" }}
+            className="flex-shrink-0"
+          >
+            <Link to="/" className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-sm">K&H</span>
+              </div>
+              <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                Kamakshi & HeForShe
+              </span>
+            </Link>
+          </motion.div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:block">
-            <div className="ml-10 flex items-center space-x-8">
-              {navItems.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => scrollToSection(item.id)}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:scale-105 ${
-                    activeSection === item.id
-                      ? 'text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900'
-                      : 'text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400'
+            <div className="ml-10 flex items-baseline space-x-4">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                    location.pathname === link.path
+                      ? 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300'
+                      : 'text-gray-600 hover:text-purple-600 dark:text-gray-300 dark:hover:text-purple-400'
                   }`}
                 >
-                  {item.label}
-                </button>
+                  {link.label}
+                </Link>
               ))}
-              <button
-                onClick={toggleDarkMode}
-                className="p-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
-              >
-                {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-              </button>
             </div>
           </div>
 
-          {/* Mobile menu button */}
-          <div className="md:hidden flex items-center space-x-2">
+          {/* Dark Mode Toggle & Mobile Menu */}
+          <div className="flex items-center space-x-2">
             <button
               onClick={toggleDarkMode}
-              className="p-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+              className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
             >
-              {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+              {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
+
+            {/* Mobile menu button */}
             <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="p-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="md:hidden p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
             >
-              {isOpen ? <X size={24} /> : <Menu size={24} />}
+              {isMenuOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Mobile Navigation */}
-      <div className={`md:hidden transition-all duration-300 ease-in-out ${
-        isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-      } overflow-hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-md`}>
-        <div className="px-2 pt-2 pb-3 space-y-1">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => scrollToSection(item.id)}
-              className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
-                activeSection === item.id
-                  ? 'text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900'
-                  : 'text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-gray-100 dark:hover:bg-gray-700'
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
+        {/* Mobile Navigation */}
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden border-t border-purple-100 dark:border-gray-700"
+          >
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`block px-3 py-2 rounded-md text-base font-medium transition-all duration-200 ${
+                    location.pathname === link.path
+                      ? 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300'
+                      : 'text-gray-600 hover:text-purple-600 dark:text-gray-300 dark:hover:text-purple-400'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </motion.div>
+        )}
       </div>
     </nav>
   );
